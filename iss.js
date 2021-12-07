@@ -11,7 +11,6 @@ const request = require('request');
 const fetchMyIP = function(callback) {
   // use request to fetch IP address from JSON API
   request('https://api.ipify.org/?format=json', function(error, response, body) {
-    //console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
 
     if (error) {
       callback(error, null);
@@ -27,14 +26,11 @@ const fetchMyIP = function(callback) {
     const ip = JSON.parse(body)["ip"];
     callback(null, ip);
 
-    //fetchCoordsByIP(ip, null);
-
   });
 };
 
 const fetchCoordsByIP = (ip, callback) => {
   request(`https://freegeoip.app/json/${ip}`, function(error, response, body) {
-    //console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
 
     if (error) {
       callback(error, null);
@@ -97,7 +93,22 @@ const fetchISSFlyOverTimes = function(coords, callback) {
  *     [ { risetime: <number>, duration: <number> }, ... ]
  */
 const nextISSTimesForMyLocation = function(callback) {
-  // empty for now
+  fetchMyIP((error, ip) => {
+    if (error) {
+      return callback(error, null);
+    }
+    fetchCoordsByIP(ip, (error, coords) => {
+      if (error) {
+        return callback(error, null);
+      }
+      fetchISSFlyOverTimes(coords, (error, nextPasses) => {
+        if (error) {
+          return callback(error, null);
+        }
+        callback(null, nextPasses);
+      });
+    });
+  });
 };
 
 module.exports = {
